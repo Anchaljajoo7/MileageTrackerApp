@@ -2,12 +2,14 @@ package com.app.mileagetracker.ui
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.app.mileagetracker.R
 import com.app.mileagetracker.databinding.ActivityMapPreviewBinding
+import com.app.mileagetracker.ui.view.MainActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -26,7 +28,8 @@ class MapPreviewActivity : AppCompatActivity() {
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
-            val pathPoints: List<LatLng> = Gson().fromJson(intent.getStringExtra("path"), object : TypeToken<List<LatLng>>() {}.type)
+            val pathPoints= MainActivity.lastPathJson
+            Log.d("Anchal", "onCreate:map activity "+pathPoints)
             val polyline = PolylineOptions().addAll(pathPoints).color(Color.BLUE).width(8f)
             googleMap.addPolyline(polyline)
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 15f))

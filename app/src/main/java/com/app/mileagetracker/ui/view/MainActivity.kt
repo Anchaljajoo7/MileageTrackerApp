@@ -1,6 +1,7 @@
 package com.app.mileagetracker.ui.view
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
@@ -19,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.app.mileagetracker.databinding.ActivityMainBinding
 import com.app.mileagetracker.tracking.LocationService
+import com.app.mileagetracker.ui.MapPreviewActivity
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -39,6 +42,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
+    companion object {
+        var lastPathJson: MutableList<LatLng> = mutableListOf()
+    }
+
+    private fun isServiceRunning(): Boolean {
+        val activityManager =
+            getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
+            if (service.service.className == LocationService::class.java.name) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun initialSetup() {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -47,11 +65,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
 
+        updateButtonVisibility(isServiceRunning())
+
+        val running = isServiceRunning()
+        Toast.makeText(
+            this,
+            "Service is ${if (running) "already" else "not"} running",
+            Toast.LENGTH_SHORT
+        ).show()
+
+
         if (!hasAllRequiredPermissions()) {
             requestInitialPermissions()
         }
     }
 
+    private fun updateButtonVisibility(isRunning: Boolean) {
+        activityMainBinding.startBtn.visibility =
+            if (isRunning) android.view.View.GONE else android.view.View.VISIBLE
+        activityMainBinding.endBtn.visibility =
+            if (isRunning) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun clickEvent() {
 
         activityMainBinding.startBtn.setOnClickListener {
@@ -60,6 +97,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
                 Log.d("Anchal", "onCreate: alllllllllll")
                 startLocationService()
+                val running = isServiceRunning()
+                Toast.makeText(
+                    this,
+                    "Service is ${if (running) "started" else "not"} ",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                updateButtonVisibility(true)
             } else {
                 requestLocationPermissions()
             }
@@ -69,6 +114,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val intent = Intent(this, LocationService::class.java)
             stopService(intent)
             isTracking = false
+//            updateButtonVisibility(false)
+            val running = isServiceRunning()
+            Toast.makeText(
+                this,
+                "Service is ${if (running) "not" else "ended"} ",
+                Toast.LENGTH_SHORT
+            ).show()
+//            startActivity(Intent(this@MainActivity, MapPreviewActivity::class.java))
+
+
+            val mapIntent = Intent(this@MainActivity, MapPreviewActivity::class.java)
+
+//            Log.d("Anchal", "clickEvent:last path "+LocationService.lastPathJson)
+            // Pass it
+            startActivity(mapIntent)
         }
 
     }
@@ -79,7 +139,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val allGranted = permissions.all { it.value }
             if (!allGranted) {
                 showSettingsDialog()
-                Toast.makeText(this, "All location permissions are required!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Some permissions were permanently denied. Please enable them from settings.", Toast.LENGTH_SHORT).show()
             } else {
 //                startLocationService()
             }

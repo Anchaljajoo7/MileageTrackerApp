@@ -2,6 +2,7 @@ package com.app.mileagetracker.room_database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.android.gms.maps.model.LatLng
 
 @Entity(tableName = "journeys")
 data class Journey(
@@ -9,5 +10,5 @@ data class Journey(
     val startTime: Long,
     val endTime: Long,
     val distanceInMeters: Float,
-    val pathJson: String
+    val pathJson: List<LatLng>
 )

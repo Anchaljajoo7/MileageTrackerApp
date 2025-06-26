@@ -17,6 +17,7 @@ import androidx.room.Room
 import com.app.mileagetracker.R
 import com.app.mileagetracker.room_database.AppDatabase
 import com.app.mileagetracker.room_database.Journey
+import com.app.mileagetracker.ui.view.MainActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -32,6 +33,8 @@ class LocationService : LifecycleService() {
     private val pathPoints = mutableListOf<LatLng>()
     private var totalDistance = 0f
     private var startTime = 0L
+
+
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
@@ -116,6 +119,21 @@ class LocationService : LifecycleService() {
             return
         }
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
         fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
     }
 
@@ -126,8 +144,11 @@ class LocationService : LifecycleService() {
             startTime = startTime,
             endTime = endTime,
             distanceInMeters = totalDistance,
-            pathJson = Gson().toJson(pathPoints)
+            pathJson = pathPoints
         )
+        MainActivity.lastPathJson = journey.pathJson.toMutableList()
+        Log.d("Anchal", "onDestroy: "+ MainActivity.lastPathJson)
+
         lifecycleScope.launch {
             val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "journey-db").build()
             db.journeyDao().insertJourney(journey)

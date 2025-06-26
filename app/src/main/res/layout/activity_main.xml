@@ -8,6 +8,7 @@
     tools:context=".ui.view.MainActivity">
 
     <LinearLayout
+        android:layout_marginHorizontal="15dp"
         android:gravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,6 +17,7 @@
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
             android:id="@+id/startBtn"
+            android:visibility="visible"
             android:layout_height="wrap_content"
             android:text="Start Button"/>
 
@@ -23,6 +25,7 @@
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
             android:id="@+id/endBtn"
+            android:visibility="gone"
             android:layout_height="wrap_content"
             android:text="End Button"/>
 
