@@ -100,6 +100,7 @@ class LocationService : LifecycleService() {
                 for (loc in result.locations) {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
+                        Log.d("Anchal", "onLocationResult: "+newPoint)
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
