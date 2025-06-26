@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -29,6 +30,49 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var totalSteps = 0f
     private var previousTotalSteps = 0f
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(activityMainBinding.root)
+        initialSetup()
+        clickEvent()
+
+    }
+
+    private fun initialSetup() {
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        stepCounterSensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
+
+        if (!hasAllRequiredPermissions()) {
+            requestInitialPermissions()
+        }
+    }
+
+    private fun clickEvent() {
+
+        activityMainBinding.startBtn.setOnClickListener {
+            Log.d("Anchal", "Checking permissions before starting service")
+            if (hasAllRequiredPermissions()) {
+
+                Log.d("Anchal", "onCreate: alllllllllll")
+                startLocationService()
+            } else {
+                requestLocationPermissions()
+            }
+        }
+
+        activityMainBinding.endBtn.setOnClickListener {
+            val intent = Intent(this, LocationService::class.java)
+            stopService(intent)
+            isTracking = false
+        }
+
+    }
+
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -37,11 +81,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 showSettingsDialog()
                 Toast.makeText(this, "All location permissions are required!", Toast.LENGTH_SHORT).show()
             } else {
-                startLocationService()
+//                startLocationService()
             }
         }
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestLocationPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
@@ -49,10 +94,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        }
+        permissionsToRequest.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        permissionsToRequest.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
         }
@@ -110,45 +153,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         isTracking = true
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(activityMainBinding.root)
-        Log.d("Anchal", "onCreate: "+isTracking)
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
-        stepCounterSensor?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-        }
-
-        if (!hasAllRequiredPermissions()) {
-            requestInitialPermissions()
-        }
-
-        activityMainBinding.startBtn.setOnClickListener {
-            Log.d("Anchal", "Checking permissions before starting service")
-            if (hasAllRequiredPermissions()) {
-
-                Log.d("Anchal", "onCreate: alllllllllll")
-                startLocationService()
-            } else {
-                requestLocationPermissions()
-            }
-        }
-
-        activityMainBinding.endBtn.setOnClickListener {
-            val intent = Intent(this, LocationService::class.java)
-            stopService(intent)
-            isTracking = false
-        }
-
-        // Optional: Prompt to disable battery optimization
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-//            startActivity(intent)
-//        }
-    }
 
     private fun requestInitialPermissions() {
         val permissions = mutableListOf(
@@ -180,28 +185,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onDestroy()
         sensorManager.unregisterListener(this)
     }
-
-//
-//    private fun requestBackgroundLocationPermission() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-//            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-//            != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            permissionRequestLauncher.launch(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
-//        }
-//    }
-//
-//    val permissionRequestLauncher = registerForActivityResult(
-//        ActivityResultContracts.RequestMultiplePermissions()
-//    ) { permissions ->
-//        val allGranted = permissions.all { it.value }
-//
-//        if (allGranted) {
-//            requestBackgroundLocationPermission() // ask second-stage only if needed
-//        } else {
-//            Toast.makeText(this, "Location permissions are required!", Toast.LENGTH_SHORT).show()
-//        }
-//    }
 
 
 
