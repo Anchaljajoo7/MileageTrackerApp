@@ -24,7 +24,6 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
-import com.google.gson.Gson
 import com.google.maps.android.SphericalUtil
 import kotlinx.coroutines.launch
 
@@ -172,6 +171,7 @@ class LocationService : LifecycleService() {
             startTime = startTime,
             endTime = endTime,
             distanceInMeters = totalDistance,
+            durationInMiliSeconds = endTime - startTime,
             pathJson = pathPoints
         )
         MainActivity.lastPathJson = journey.pathJson.toMutableList()

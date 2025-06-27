@@ -10,5 +10,6 @@ data class Journey(
     val startTime: Long,
     val endTime: Long,
     val distanceInMeters: Float,
+    val durationInMiliSeconds:Long,
     val pathJson: List<LatLng>
 )

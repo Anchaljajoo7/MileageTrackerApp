@@ -12,4 +12,8 @@ interface JourneyDao {
 
     @Query("SELECT * FROM journeys ORDER BY startTime DESC")
     fun getAllJourneys(): Flow<List<Journey>>
+
+    @Query("SELECT * FROM journeys ORDER BY startTime DESC LIMIT 1")
+   suspend  fun getLatestJourney(): Journey
+
 }

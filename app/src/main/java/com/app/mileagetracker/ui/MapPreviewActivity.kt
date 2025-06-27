@@ -3,10 +3,13 @@ package com.app.mileagetracker.ui
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.app.mileagetracker.R
 import com.app.mileagetracker.databinding.ActivityMapPreviewBinding
 import com.app.mileagetracker.ui.view.MainActivity
+import com.app.mileagetracker.ui.viewmodel.MainViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.PolylineOptions
@@ -15,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MapPreviewActivity : AppCompatActivity() {
     private lateinit var activityMapPreviewBinding: ActivityMapPreviewBinding
+    val mainViewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityMapPreviewBinding=ActivityMapPreviewBinding.inflate(layoutInflater)
@@ -39,6 +43,26 @@ class MapPreviewActivity : AppCompatActivity() {
             googleMap.addPolyline(polyline)
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 15f))
         }
+
+        mainViewModel.fetchLatestJourney()
+
+        lifecycleScope.launchWhenStarted {
+            mainViewModel.latestJourney.collect { journey ->
+                journey?.let {
+                    activityMapPreviewBinding.tvTotalDuration.text =
+                        "Total Duration: ${it.durationInMiliSeconds / 1000} sec"
+
+//                    activityMapPreviewBinding.tvTotalDistance.text =
+//                        "Total Distance: ${(it.distanceInMeters / 1000)} KM"
+//
+//                    activityMapPreviewBinding.tvStartEndTime.text =
+//                        "Start: ${it.startTime} | End: ${it.endTime}"
+                }
+            }
+        }
+
+
+
 
     }
 }
