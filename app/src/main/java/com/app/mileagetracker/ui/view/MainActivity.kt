@@ -114,6 +114,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val intent = Intent(this, LocationService::class.java)
             stopService(intent)
             isTracking = false
+
+            previousTotalSteps = totalSteps
 //            updateButtonVisibility(false)
             val running = isServiceRunning()
             Toast.makeText(
@@ -125,7 +127,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 
             val mapIntent = Intent(this@MainActivity, MapPreviewActivity::class.java)
-
+//            finishAffinity()
 //            Log.d("Anchal", "clickEvent:last path "+LocationService.lastPathJson)
             // Pass it
             startActivity(mapIntent)
@@ -253,11 +255,23 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+
+
+
+
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+        previousTotalSteps = totalSteps
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Ensure tracking state and buttons are updated when returning from another activity
+        updateButtonVisibility(isServiceRunning())
     }
 
 

@@ -19,7 +19,18 @@ class MapPreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         activityMapPreviewBinding=ActivityMapPreviewBinding.inflate(layoutInflater)
         setContentView(activityMapPreviewBinding.root)
+        initialSetup()
+        clickEvent()
 
+    }
+
+    private fun clickEvent() {
+        activityMapPreviewBinding.imgBack.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun initialSetup() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
             val pathPoints= MainActivity.lastPathJson
@@ -28,5 +39,6 @@ class MapPreviewActivity : AppCompatActivity() {
             googleMap.addPolyline(polyline)
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 15f))
         }
+
     }
 }
