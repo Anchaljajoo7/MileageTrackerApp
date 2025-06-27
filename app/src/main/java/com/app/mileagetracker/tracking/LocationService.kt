@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.os.Build
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -134,7 +135,8 @@ class LocationService : LifecycleService() {
                 for (loc in result.locations) {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
-                        Log.d("Anchal", "onLocationResult: "+newPoint)
+                        Log.d("Anchal", "shraddha: "+newPoint)
+                        Toast.makeText(applicationContext, "__________________"+newPoint, Toast.LENGTH_SHORT).show()
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
@@ -172,9 +174,9 @@ class LocationService : LifecycleService() {
             endTime = endTime,
             distanceInMeters = totalDistance,
             durationInMiliSeconds = endTime - startTime,
-            pathJson = pathPoints
+            pathJson = MainActivity.lastPathJson
         )
-        MainActivity.lastPathJson = journey.pathJson.toMutableList()
+//        MainActivity.lastPathJson = journey.pathJson
         Log.d("Anchal", "onDestroy: "+ MainActivity.lastPathJson)
 
         lifecycleScope.launch {

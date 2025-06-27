@@ -3,6 +3,7 @@ package com.app.mileagetracker.ui
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -52,11 +53,14 @@ class MapPreviewActivity : AppCompatActivity() {
                     activityMapPreviewBinding.tvTotalDuration.text =
                         "Total Duration: ${it.durationInMiliSeconds / 1000} sec"
 
-//                    activityMapPreviewBinding.tvTotalDistance.text =
-//                        "Total Distance: ${(it.distanceInMeters / 1000)} KM"
+                    activityMapPreviewBinding.tvTotalDistance.text =
+                        "Total Distance: ${(it.distanceInMeters / 1000)} KM"
+
+                    Log.d("Anchal", "initialSetup: "+it.distanceInMeters)
+                    Toast.makeText(this@MapPreviewActivity, ""+it.distanceInMeters, Toast.LENGTH_SHORT).show()
 //
-//                    activityMapPreviewBinding.tvStartEndTime.text =
-//                        "Start: ${it.startTime} | End: ${it.endTime}"
+                    activityMapPreviewBinding.tvStartEndTime.text =
+                        "Start: ${formatTime(it.startTime)} | End: ${formatTime(it.endTime)}"
                 }
             }
         }
@@ -64,5 +68,14 @@ class MapPreviewActivity : AppCompatActivity() {
 
 
 
+
+
     }
+
+    fun formatTime(millis: Long): String {
+        val date = java.util.Date(millis)
+        val format = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.getDefault())
+        return format.format(date)
+    }
+
 }

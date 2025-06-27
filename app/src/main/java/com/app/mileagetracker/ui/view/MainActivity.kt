@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -17,17 +18,29 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.app.mileagetracker.databinding.ActivityMainBinding
 import com.app.mileagetracker.tracking.LocationService
 import com.app.mileagetracker.ui.MapPreviewActivity
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.SphericalUtil
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.log
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var activityMainBinding: ActivityMainBinding
     private var isTracking = false
+    private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private var totalDistance = 0f
+    private var startTime = 0L
+    private val pathPoints = mutableListOf<LatLng>()
     private lateinit var sensorManager: SensorManager
     private var stepCounterSensor: Sensor? = null
     private var totalSteps = 0f
@@ -37,6 +50,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
+        Log.d("Anchal", "onCreate: "+totalSteps)
+        Log.d("Anchal", "onCreate: "+previousTotalSteps)
         initialSetup()
         clickEvent()
 
@@ -65,6 +80,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
 
+
+
         updateButtonVisibility(isServiceRunning())
 
         val running = isServiceRunning()
@@ -73,6 +90,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             "Service is ${if (running) "already" else "not"} running",
             Toast.LENGTH_SHORT
         ).show()
+
+
+
+        if(running){
+            Log.d("Anchal", "initialSetup: insideeeee"+totalSteps)
+            activityMainBinding.tvSteps.setText("Total steps: $totalSteps")
+        }
+        else{
+            activityMainBinding.tvSteps.setText("Total steps: 0")
+        }
 
 
         if (!hasAllRequiredPermissions()) {
@@ -103,6 +130,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     "Service is ${if (running) "started" else "not"} ",
                     Toast.LENGTH_SHORT
                 ).show()
+                totalSteps=0F
+                previousTotalSteps = 0F
+                activityMainBinding.tvSteps.text = "Total steps: 0"
 
                 updateButtonVisibility(true)
             } else {
@@ -115,7 +145,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             stopService(intent)
             isTracking = false
 
-            previousTotalSteps = totalSteps
+//            previousTotalSteps = totalSteps
+            totalSteps = 0f
+            previousTotalSteps = 0f
+
+            Log.d("Anchal", "clickEvent:t "+totalSteps)
+            Log.d("Anchal", "clickEvent:p "+previousTotalSteps)
 //            updateButtonVisibility(false)
             val running = isServiceRunning()
             Toast.makeText(
@@ -248,23 +283,70 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             totalSteps = event.values[0]
             val currentSteps = totalSteps - previousTotalSteps
-            Log.d("Anchal", "onSensorChanged: "+currentSteps)
+
+            Log.d("Anchal", "onSensorChanged:previous "+previousTotalSteps)
+            Log.d("Anchal", "onSensorChanged: total"+totalSteps)
+            Log.d("Anchal", "onSensorChanged: current "+currentSteps)
+            activityMainBinding.tvSteps.text = "Total steps: $currentSteps"
+            startLocationUpdates()
             Toast.makeText(this@MainActivity, "total steps:"+totalSteps, Toast.LENGTH_SHORT).show()
             Toast.makeText(this@MainActivity, "current steps:"+currentSteps, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity, "previous steps:"+previousTotalSteps, Toast.LENGTH_SHORT).show()
 //            activityMainBinding.stepsTextView.text = "Steps: $currentSteps"
         }
     }
 
 
 
+    private fun startLocationUpdates() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
+            .setMinUpdateDistanceMeters(10f)
+            .build()
 
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                super.onLocationResult(result)
+                for (loc in result.locations) {
+                    if (loc.accuracy < 20) {
+                        val newPoint = LatLng(loc.latitude, loc.longitude)
+                        Log.d("Anchal", "shraddha: "+newPoint)
+                        Toast.makeText(applicationContext, "__________________"+newPoint, Toast.LENGTH_SHORT).show()
+                        if (pathPoints.isNotEmpty()) {
+                            totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
+                        }
+                        pathPoints.add(newPoint)
+                        lastPathJson.addAll(pathPoints)
+                    }
+                }
+            }
+        }
+
+//        if (!hasAllRequiredPermissions()) {
+//            Log.e("LocationService", "Permissions lost during runtime. Stopping service.")
+//            stopSelf()
+//            return
+//        }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+
+            return
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
+    }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-        previousTotalSteps = totalSteps
+//        previousTotalSteps = totalSteps
     }
 
     override fun onResume() {
