@@ -33,14 +33,20 @@ class LocationService : LifecycleService() {
     private val pathPoints = mutableListOf<LatLng>()
     private var totalDistance = 0f
     private var startTime = 0L
+    private var notificationManager: NotificationManager? = null
+    private var isNotificationRunning = false
 
+    private fun formatElapsedTime(millis: Long): String {
+        val seconds = millis / 1000 % 60
+        val minutes = millis / 1000 / 60 % 60
+        val hours = millis / 1000 / 60 / 60
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    }
 
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
-
-        // 🔒 Always start foreground notification first to prevent crash
 
 
         if (!hasRequiredPermissions()) {
@@ -69,15 +75,41 @@ class LocationService : LifecycleService() {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun startForegroundNotification() {
-
         createNotificationChannel()
-        val notification = NotificationCompat.Builder(this, "track_channel")
+        notificationManager = getSystemService(NotificationManager::class.java)
+        isNotificationRunning = true
+
+        startTime = System.currentTimeMillis()
+
+        // Initial Notification
+        val initialNotification = NotificationCompat.Builder(this, "track_channel")
             .setContentTitle("Tracking journey")
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentText("Tracking ongoing")
+            .setContentText("Elapsed Time: 00:00:00")
+            .setOngoing(true)
             .build()
-        startForeground(1, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
+
+        startForeground(1, initialNotification, FOREGROUND_SERVICE_TYPE_LOCATION)
+
+        lifecycleScope.launch {
+            while (isNotificationRunning) {
+                val elapsed = System.currentTimeMillis() - startTime
+                val formattedTime = formatElapsedTime(elapsed)
+
+                val updatedNotification = NotificationCompat.Builder(this@LocationService, "track_channel")
+                    .setContentTitle("Tracking journey")
+                    .setSmallIcon(R.drawable.img_tracking)
+                    .setContentText("Elapsed Time: $formattedTime")
+                    .setOngoing(true)
+                    .build()
+
+                notificationManager?.notify(1, updatedNotification)
+
+                kotlinx.coroutines.delay(1000)
+            }
+        }
     }
+
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -127,11 +159,7 @@ class LocationService : LifecycleService() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+
             return
         }
         fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
@@ -153,5 +181,6 @@ class LocationService : LifecycleService() {
             val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "journey-db").build()
             db.journeyDao().insertJourney(journey)
         }
+        isNotificationRunning = false
     }
 }

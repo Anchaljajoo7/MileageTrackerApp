@@ -159,11 +159,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
         }
+        if (Build.VERSION.SDK_INT >= 33) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
 
         val permanentlyDenied = permissionsToRequest.any { permission ->
             ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED &&
                     !shouldShowRequestPermissionRationale(permission)
         }
+
 
         if (permanentlyDenied) {
             showSettingsDialog()
@@ -199,10 +204,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE_LOCATION)
         } else PackageManager.PERMISSION_GRANTED
 
+        val notificationPermission = if (Build.VERSION.SDK_INT >= 33) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+        } else PackageManager.PERMISSION_GRANTED
+
         return (fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED) &&
                 fgService == PackageManager.PERMISSION_GRANTED &&
                 fgLocation == PackageManager.PERMISSION_GRANTED
-                &&  activityRecognition == PackageManager.PERMISSION_GRANTED
+                &&  activityRecognition == PackageManager.PERMISSION_GRANTED &&
+                notificationPermission == PackageManager.PERMISSION_GRANTED
     }
 
 
@@ -224,6 +234,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION)
+        }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
         permissionRequestLauncher.launch(permissions.toTypedArray())
     }

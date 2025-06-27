@@ -3,6 +3,10 @@
     <style name="Base.Theme.MileageTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/black</item>
+
+        <!-- Set icons to dark (for light background) -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.MileageTracker" parent="Base.Theme.MileageTracker" />
