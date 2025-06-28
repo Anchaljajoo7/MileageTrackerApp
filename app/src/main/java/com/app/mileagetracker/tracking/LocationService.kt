@@ -8,7 +8,6 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.os.Build
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -114,10 +113,14 @@ class LocationService : LifecycleService() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                "track_channel", // ID must match the one used in Builder
+                "track_channel",
                 "Tracking Service",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 200)
+                setSound(null, null)
+            }
             val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(channel)
         }
@@ -136,7 +139,6 @@ class LocationService : LifecycleService() {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
                         Log.d("Anchal", "shraddha: "+newPoint)
-                        Toast.makeText(applicationContext, "__________________"+newPoint, Toast.LENGTH_SHORT).show()
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }

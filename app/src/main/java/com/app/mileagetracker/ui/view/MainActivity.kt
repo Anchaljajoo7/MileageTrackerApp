@@ -31,7 +31,6 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.SphericalUtil
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.math.log
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -39,7 +38,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var isTracking = false
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private var totalDistance = 0f
-    private var startTime = 0L
     private val pathPoints = mutableListOf<LatLng>()
     private lateinit var sensorManager: SensorManager
     private var stepCounterSensor: Sensor? = null
@@ -79,8 +77,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         stepCounterSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
-
-
 
         updateButtonVisibility(isServiceRunning())
 
@@ -289,10 +285,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             Log.d("Anchal", "onSensorChanged: current "+currentSteps)
             activityMainBinding.tvSteps.text = "Total steps: $currentSteps"
             startLocationUpdates()
-            Toast.makeText(this@MainActivity, "total steps:"+totalSteps, Toast.LENGTH_SHORT).show()
-            Toast.makeText(this@MainActivity, "current steps:"+currentSteps, Toast.LENGTH_SHORT).show()
-            Toast.makeText(this@MainActivity, "previous steps:"+previousTotalSteps, Toast.LENGTH_SHORT).show()
-//            activityMainBinding.stepsTextView.text = "Steps: $currentSteps"
         }
     }
 
@@ -310,7 +302,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
                         Log.d("Anchal", "shraddha: "+newPoint)
-                        Toast.makeText(applicationContext, "__________________"+newPoint, Toast.LENGTH_SHORT).show()
+
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
