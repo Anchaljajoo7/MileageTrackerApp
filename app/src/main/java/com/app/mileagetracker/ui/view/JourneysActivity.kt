@@ -75,6 +75,7 @@ class JourneysActivity : AppCompatActivity(),RecyclerItemClickListner {
             intent.putExtra("starttime",journeyList[position].startTime)
             intent.putExtra("duration",journeyList[position].durationInMiliSeconds)
             intent.putExtra("distance",journeyList[position].distanceInMeters)
+            intent.putParcelableArrayListExtra("latlong", ArrayList(journeyList[position].pathJson))
             startActivity(intent)
         }
     }
