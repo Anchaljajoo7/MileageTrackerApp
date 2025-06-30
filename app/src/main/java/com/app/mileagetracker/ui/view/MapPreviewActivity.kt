@@ -2,6 +2,7 @@ package com.app.mileagetracker.ui.view
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -23,8 +24,36 @@ class MapPreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         activityMapPreviewBinding=ActivityMapPreviewBinding.inflate(layoutInflater)
         setContentView(activityMapPreviewBinding.root)
-        initialSetup()
+        val type = intent.getStringExtra("AllJourneyScreen")
+        Log.d("Anchal", "onCreate: "+type)
+        if (type.equals("AllJourneyScreen")) {
+            Log.d("Anchal", "onCreate: all journey")
+            intentData()
+        } else {
+            Log.d("Anchal", "onCreate: journey")
+            initialSetup()
+        }
+
         clickEvent()
+
+    }
+
+    private fun intentData() {
+
+
+        val startTime = intent.getLongExtra("starttime", 0L)
+        val endTime = intent.getLongExtra("endtime", 0L)
+        val duration = intent.getLongExtra("duration", 0L)
+        val distance = intent.getFloatExtra("distance", 0f)
+
+        activityMapPreviewBinding.tvTotalDuration.text =
+            "Total Duration: ${duration / 1000} sec"
+
+        activityMapPreviewBinding.tvTotalDistance.text =
+            "Total Distance: ${String.format("%.2f", distance / 1000)} KM"
+
+        activityMapPreviewBinding.tvStartEndTime.text =
+            "Start: ${formatTime(startTime)} | End: ${formatTime(endTime)}"
 
     }
 

@@ -43,6 +43,11 @@ class JourneysAdapter(
         holder.binding.tvJourneyEndTime.text = "Journey endtime: ${formatTime(list[position].endTime)}"
         Log.d("Anchallllllllllllllllllll", "onBindViewHolder: " + list.size)
 
+
+        holder.binding.llMain.setOnClickListener {
+            recyclerItemClickListner.onItemClick("onItemClick",position)
+        }
+
     }
 
     fun formatTime(millis: Long): String {

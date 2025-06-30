@@ -7,17 +7,33 @@
     android:layout_height="match_parent"
     tools:context=".ui.view.JourneysActivity">
 
-
+<LinearLayout
+    android:id="@+id/llBack"
+    android:layout_marginHorizontal="15dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
     <ImageView
         android:layout_marginVertical="10dp"
-        android:layout_marginHorizontal="15dp"
+
         android:id="@+id/imgBack"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:src="@drawable/img_back" />
 
+    <TextView
+        android:textSize="15dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Journeys"/>
+
+</LinearLayout>
+
+
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_below="@id/imgBack"
+        android:layout_below="@id/llBack"
         android:visibility="gone"
         android:id="@+id/rvJourneysList"
         android:layout_marginHorizontal="15dp"
@@ -29,7 +45,7 @@
         android:visibility="gone"
         android:textSize="15sp"
         android:gravity="center"
-        android:layout_below="@id/imgBack"
+        android:layout_below="@id/llBack"
         android:id="@+id/tvNoJourneys"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
