@@ -98,14 +98,23 @@ class MapPreviewActivity : AppCompatActivity() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
             val pathPoints= MainActivity.lastPathJson
-            googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
-            googleMap.uiSettings.isMapToolbarEnabled = true
-            val polyline = PolylineOptions().addAll(pathPoints)
-                .color(Color.YELLOW).width(10f)
-            googleMap.addPolyline(polyline)
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 25f))
-            googleMap.addMarker(MarkerOptions().position(pathPoints.first()).title("Start"))
-            googleMap.addMarker(MarkerOptions().position(pathPoints.last()).title("End"))
+
+            if (!pathPoints.isNullOrEmpty()) {
+
+                googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
+                googleMap.uiSettings.isMapToolbarEnabled = true
+                val polyline = PolylineOptions().addAll(pathPoints)
+                    .color(Color.YELLOW).width(10f)
+                googleMap.addPolyline(polyline)
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 25f))
+                googleMap.addMarker(MarkerOptions().position(pathPoints.first()).title("Start"))
+                googleMap.addMarker(MarkerOptions().position(pathPoints.last()).title("End"))
+
+            }
+
+
+
+
         }
 
 
