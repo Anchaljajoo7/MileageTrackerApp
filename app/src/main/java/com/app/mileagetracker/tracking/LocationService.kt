@@ -49,11 +49,10 @@ class LocationService : LifecycleService() {
 
 
         if (!hasRequiredPermissions()) {
-            Log.e("LocationService", "Missing required permissions. Stopping service.")
             stopSelf()
             return
         }
-        Log.d("Anchal", "onCreate: location")
+
         startForegroundNotification()
         startTime = System.currentTimeMillis()
         startLocationUpdates()
@@ -138,7 +137,7 @@ class LocationService : LifecycleService() {
                 for (loc in result.locations) {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
-                        Log.d("Anchal", "shraddha: "+newPoint)
+
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
@@ -178,8 +177,7 @@ class LocationService : LifecycleService() {
             durationInMiliSeconds = endTime - startTime,
             pathJson = MainActivity.lastPathJson
         )
-//        MainActivity.lastPathJson = journey.pathJson
-        Log.d("Anchal", "onDestroy: "+ MainActivity.lastPathJson)
+//
 
         lifecycleScope.launch {
             val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "journey-db").build()

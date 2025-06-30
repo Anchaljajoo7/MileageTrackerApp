@@ -13,14 +13,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val journeyDao: JourneyDao) : ViewModel() {
-    val journeys = journeyDao.getAllJourneys().asLiveData()
-
-//    val latestJourney=journeyDao.getLatestJourney()
-//
 
 
     private val _latestJourney = MutableStateFlow<Journey?>(null)
     val latestJourney: StateFlow<Journey?> = _latestJourney
+
+    private val _allJourneys = MutableStateFlow<List<Journey>>(emptyList())
+    val allJourneys: StateFlow<List<Journey>> = _allJourneys
 
     fun fetchLatestJourney() {
         viewModelScope.launch {
@@ -28,5 +27,15 @@ class MainViewModel @Inject constructor(private val journeyDao: JourneyDao) : Vi
             _latestJourney.value = journey
         }
     }
+
+
+    fun fetchAllJourneys() {
+        viewModelScope.launch {
+            journeyDao.getAllJourneys().collect { journeys ->
+                _allJourneys.value = journeys
+            }
+        }
+    }
+
 }
 

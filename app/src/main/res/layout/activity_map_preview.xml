@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:background="@color/white"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MapPreviewActivity">
+    tools:context=".ui.view.MapPreviewActivity">
 
     <RelativeLayout
         android:layout_marginBottom="15dp"

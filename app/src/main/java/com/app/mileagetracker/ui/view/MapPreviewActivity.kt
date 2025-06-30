@@ -1,19 +1,16 @@
-package com.app.mileagetracker.ui
+package com.app.mileagetracker.ui.view
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.app.mileagetracker.R
 import com.app.mileagetracker.databinding.ActivityMapPreviewBinding
-import com.app.mileagetracker.ui.view.MainActivity
 import com.app.mileagetracker.ui.viewmodel.MainViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,13 +37,9 @@ class MapPreviewActivity : AppCompatActivity() {
     private fun initialSetup() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
-            Log.d("Anchallllllll", "initialSetup: " + MainActivity.lastPathJson)
             val pathPoints= MainActivity.lastPathJson
-
-            Log.d("Anchal", "onCreate:map activity "+pathPoints)
             googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
             googleMap.uiSettings.isMapToolbarEnabled = true
-//            googleMap.uiSettings.isCompassEnabled = true
             val polyline = PolylineOptions().addAll(pathPoints)
                 .color(Color.YELLOW).width(10f)
             googleMap.addPolyline(polyline)
@@ -69,7 +62,6 @@ class MapPreviewActivity : AppCompatActivity() {
                     activityMapPreviewBinding.tvTotalDistance.text =
                         "Total Distance: ${(it.distanceInMeters / 1000)} KM"
 
-                    Log.d("Anchal", "initialSetup: "+it.distanceInMeters)
                     activityMapPreviewBinding.tvStartEndTime.text =
                         "Start: ${formatTime(it.startTime)} | End: ${formatTime(it.endTime)}"
                 }

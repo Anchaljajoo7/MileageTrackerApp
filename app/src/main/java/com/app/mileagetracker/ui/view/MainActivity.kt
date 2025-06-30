@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -22,7 +21,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.app.mileagetracker.databinding.ActivityMainBinding
 import com.app.mileagetracker.tracking.LocationService
-import com.app.mileagetracker.ui.MapPreviewActivity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -48,8 +46,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
-        Log.d("Anchal", "onCreate: "+totalSteps)
-        Log.d("Anchal", "onCreate: "+previousTotalSteps)
         initialSetup()
         clickEvent()
 
@@ -90,7 +86,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 
         if(running){
-            Log.d("Anchal", "initialSetup: insideeeee"+totalSteps)
+
             activityMainBinding.tvSteps.setText("Total steps: $totalSteps")
         }
         else{
@@ -114,11 +110,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun clickEvent() {
 
+        activityMainBinding.tvAllJournies.setOnClickListener {
+            startActivity(Intent(this@MainActivity,JourneysActivity::class.java))
+        }
+
+
         activityMainBinding.startBtn.setOnClickListener {
-            Log.d("Anchal", "Checking permissions before starting service")
+
             if (hasAllRequiredPermissions()) {
 
-                Log.d("Anchal", "onCreate: alllllllllll")
                 startLocationService()
                 val running = isServiceRunning()
                 Toast.makeText(
@@ -140,27 +140,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val intent = Intent(this, LocationService::class.java)
             stopService(intent)
             isTracking = false
-
-//            previousTotalSteps = totalSteps
             totalSteps = 0f
             previousTotalSteps = 0f
 
-            Log.d("Anchal", "clickEvent:t "+totalSteps)
-            Log.d("Anchal", "clickEvent:p "+previousTotalSteps)
-//            updateButtonVisibility(false)
             val running = isServiceRunning()
             Toast.makeText(
                 this,
                 "Service is ${if (running) "not" else "ended"} ",
                 Toast.LENGTH_SHORT
             ).show()
-//            startActivity(Intent(this@MainActivity, MapPreviewActivity::class.java))
+
 
 
             val mapIntent = Intent(this@MainActivity, MapPreviewActivity::class.java)
-//            finishAffinity()
-//            Log.d("Anchal", "clickEvent:last path "+LocationService.lastPathJson)
-            // Pass it
             startActivity(mapIntent)
         }
 
@@ -183,7 +175,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun requestLocationPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
-        // Add all required permissions
         permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
         permissionsToRequest.add(Manifest.permission.FOREGROUND_SERVICE)
@@ -250,7 +241,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 
     private fun startLocationService() {
-        Log.d("Anchal", "startLocationService: ")
         val intent = Intent(this, LocationService::class.java)
         ContextCompat.startForegroundService(this, intent)
         isTracking = true
@@ -278,14 +268,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
             if (isServiceRunning() == false) event.values[0] = 0F
-            Log.d("Anchal", "onSensorChanged: aboveeee"+event.values[0])
             totalSteps = event.values[0]
-            Log.d("Anchal", "onSensorChanged: belowwwwwww"+event.values[0])
             val currentSteps = totalSteps - previousTotalSteps
-
-            Log.d("Anchal", "onSensorChanged:previous "+previousTotalSteps)
-            Log.d("Anchal", "onSensorChanged: total"+totalSteps)
-            Log.d("Anchal", "onSensorChanged: current "+currentSteps)
             activityMainBinding.tvSteps.text = "Total steps: $currentSteps"
             startLocationUpdates()
         }
@@ -304,25 +288,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 for (loc in result.locations) {
                     if (loc.accuracy < 20) {
                         val newPoint = LatLng(loc.latitude, loc.longitude)
-                        Log.d("Anchal", "shraddha: "+newPoint)
-
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
-                        Log.d("Anchalllllllllllllllllll", "onLocationResult: "+pathPoints)
                         pathPoints.add(newPoint)
                         lastPathJson.addAll(pathPoints)
                     }
                 }
             }
         }
-
-//        if (!hasAllRequiredPermissions()) {
-//            Log.e("LocationService", "Permissions lost during runtime. Stopping service.")
-//            stopSelf()
-//            return
-//        }
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -342,13 +316,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
-//        previousTotalSteps = totalSteps
+
     }
 
     override fun onResume() {
         super.onResume()
-
-        // Ensure tracking state and buttons are updated when returning from another activity
         updateButtonVisibility(isServiceRunning())
     }
 

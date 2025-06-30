@@ -11,9 +11,6 @@ import com.app.mileagetracker.utils.PermissionUtil
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
-            Log.d("BootReceiver", "Boot completed received")
-
-            // ✅ Only start service if permissions are already granted
             if (PermissionUtil.hasAllPermissions(context)) {
                 val serviceIntent = Intent(context, LocationService::class.java)
 
