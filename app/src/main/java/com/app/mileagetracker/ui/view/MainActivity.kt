@@ -277,7 +277,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
+            if (isServiceRunning() == false) event.values[0] = 0F
+            Log.d("Anchal", "onSensorChanged: aboveeee"+event.values[0])
             totalSteps = event.values[0]
+            Log.d("Anchal", "onSensorChanged: belowwwwwww"+event.values[0])
             val currentSteps = totalSteps - previousTotalSteps
 
             Log.d("Anchal", "onSensorChanged:previous "+previousTotalSteps)
@@ -306,6 +309,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                         if (pathPoints.isNotEmpty()) {
                             totalDistance += SphericalUtil.computeDistanceBetween(pathPoints.last(), newPoint).toFloat()
                         }
+                        Log.d("Anchalllllllllllllllllll", "onLocationResult: "+pathPoints)
                         pathPoints.add(newPoint)
                         lastPathJson.addAll(pathPoints)
                     }

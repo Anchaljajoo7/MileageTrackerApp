@@ -13,6 +13,8 @@ import com.app.mileagetracker.ui.viewmodel.MainViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,14 +40,23 @@ class MapPreviewActivity : AppCompatActivity() {
     private fun initialSetup() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
+            Log.d("Anchallllllll", "initialSetup: " + MainActivity.lastPathJson)
             val pathPoints= MainActivity.lastPathJson
+
             Log.d("Anchal", "onCreate:map activity "+pathPoints)
             googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
             googleMap.uiSettings.isMapToolbarEnabled = true
-            val polyline = PolylineOptions().addAll(pathPoints).color(Color.BLUE).width(8f)
+//            googleMap.uiSettings.isCompassEnabled = true
+            val polyline = PolylineOptions().addAll(pathPoints)
+                .color(Color.YELLOW).width(10f)
             googleMap.addPolyline(polyline)
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 15f))
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pathPoints.first(), 25f))
+            googleMap.addMarker(MarkerOptions().position(pathPoints.first()).title("Start"))
+            googleMap.addMarker(MarkerOptions().position(pathPoints.last()).title("End"))
         }
+
+
+
 
         mainViewModel.fetchLatestJourney()
 
@@ -59,17 +70,11 @@ class MapPreviewActivity : AppCompatActivity() {
                         "Total Distance: ${(it.distanceInMeters / 1000)} KM"
 
                     Log.d("Anchal", "initialSetup: "+it.distanceInMeters)
-//
                     activityMapPreviewBinding.tvStartEndTime.text =
                         "Start: ${formatTime(it.startTime)} | End: ${formatTime(it.endTime)}"
                 }
             }
         }
-
-
-
-
-
 
     }
 
